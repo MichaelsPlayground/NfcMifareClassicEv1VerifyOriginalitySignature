@@ -15,19 +15,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -38,6 +25,11 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.ECFieldFp;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -64,23 +56,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        publicKeyNxp.setText("04494E1A386D3D3C" +
-                             "FE3DC10E5DE68A49" +
-                             "9B1C202DB5B13239" +
-                             "3E89ED19FE5BE8BC61");
-
-        String publicKeyNxpX = "494E1A386D3D3CFE3DC10E5DE68A499B";
-        String publicKeyNxpY = "1C202DB5B132393E89ED19FE5BE8BC61";
-
-        //04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61
-        // found in https://github.com/alexbatalov/node-nxp-originality-verifier/blob/master/index.js
-
-
-        // Bouncy Castle version
-        // this way for adding bouncycastle to android
-        Security.removeProvider("BC");
-        // Confirm that positioning this provider at the end works for your needs!
-        Security.addProvider(new BouncyCastleProvider());
+        publicKeyNxp.setText("04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61");
     }
 
     // This method is run in another thread when a card is discovered
@@ -188,183 +164,125 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             e.printStackTrace();
         }
 
-        KeyFactory kf = null;
-        PublicKey pubKey = null;
-        publicKeyByte = Utils.hexStringToByteArray(publicKeyNxp.getText().toString());
-        pubKey = getPublickKeyFromCompressed(publicKeyByte);
-        if (pubKey == null) {
-            writeToUiAppend(readResult, "ERROR on public key conversion");
-            return;
-        }
-/*
-        PublicKey pubKeyPoint = null;
+        // now we are going to verify
+        // get the public key
+        String publicKeyString = publicKeyNxp.getText().toString();
         try {
-            pubKeyPoint = pointToPublicKeyBC(publicKeyNxpX, publicKeyNxpY);
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
+            signatureVerfied = checkEcdsaSignature(publicKeyString, tagSignatureByte, tagIdByte);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        if (pubKeyPoint == null) {
-            writeToUiAppend(readResult, "ERROR on public key point conversion");
-            return;
-        } else {
-            writeToUiAppend(readResult, "SUCCESS on public key point conversion");
-        }
-*/
-        System.out.println("TAG signature validation");
-        System.out.println("TagID: " + Utils.bytesToHex(tagIdByte));
-        System.out.println("Signature length: " + tagSignatureByte.length);
-        System.out.println("Signature: " + Utils.bytesToHex(tagSignatureByte));
-        System.out.println("pubKey: " + Utils.bytesToHex(pubKey.getEncoded()));
-
-/*
-pubkey:
-04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61
-found in https://github.com/alexbatalov/node-nxp-originality-verifier/blob/master/index.js
-
-data for locked NTAG216
-I/System.out: TAG signature validation
-I/System.out: TagID: 049e5082355b80
-I/System.out: Signature length: 32
-I/System.out: Signature: 6ce5a78347cdef508b13b66b35ac1ad6a25a7b1e36b8662012bf66d05716cb82
-I/System.out: pubKey: 3036301006072a8648ce3d020106052b8104001c03220004494e1a386d3d3cfe3dc10e5de68a499b1c202db5b132393e89ed19fe5be8bc61
-MDYwEAYHKoZIzj0CAQYFK4EEABwDIgAESU4aOG09PP49wQ5d5opJmxwgLbWxMjk+ie0Z/lvovGE=
-data for unlocked NTAG216
-I/System.out: TagID: 04408982355b81
-I/System.out: Signature length: 32
-I/System.out: Signature: 12650bfe759af5af5c42ae86b587c580f0b6cee5d25d4acfcbf3753f8fca0ec5
-I/System.out: pubKey: 3036301006072a8648ce3d020106052b8104001c03220004494e1a386d3d3cfe3dc10e5de68a499b1c202db5b132393e89ed19fe5be8bc61
- */
-
-        //System.out.println("pubKey point: " + Utils.bytesToHex(pubKeyPoint.getEncoded()));
-
-        /*
-        try {
-            kf = KeyFactory.getInstance("ECDH");
-            pubKey = (PublicKey) kf.generatePublic(new X509EncodedKeySpec(publicKeyByte));
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
-        }
-*/
-        // now we are going to verify
-        signatureVerfied = ecVerifySignatureP1363B(pubKey, tagIdByte, tagSignatureByte);
         writeToUiAppend(readResult, "SignatureVerified: " + signatureVerfied);
-
-        // manual data from AN12196.pdf
-        String tagIdX = "04518DFAA96180";
-        String signatureRX = "D1940D17CFEDA4BFF80359AB975F9F6514313E8F90C1D3CAAF5941AD";
-        String signatureSX = "744A1CDF9A83F883CAFE0FE95D1939B1B7E47113993324473B785D21";
-        String pubXD = "8A9B380AF2EE1B98DC417FECC263F8449C7625CECE82D9B916C992DA";
-        String pubYD = "209D68422B81EC20B65A66B5102A61596AF3379200599316A00A1410";
-        // secp224r1
-
-
     }
 
-    private static PublicKey getPublickKeyFromCompressed(byte[] compressedPublicKey) {
+    // START code from NXP's AN11350 document (NTAG21x Originality Signature Validation)
+    public static boolean checkEcdsaSignature(final String ecPubKey,
+                                              final byte[]
+                                                      signature, final byte[] data) throws NoSuchAlgorithmException {
+        final ECPublicKeySpec ecPubKeySpec = getEcPubKey(ecPubKey,
+                getEcSecp128r1());
+        return checkEcdsaSignature(ecPubKeySpec, signature, data);
+    }
 
-        KeyFactory keyFactory = null;
+    public static boolean checkEcdsaSignature(final ECPublicKeySpec
+                                                      ecPubKey, final byte[]
+                                                      signature, final byte[] data)
+            throws NoSuchAlgorithmException
+    {
+        KeyFactory keyFac = null;
         try {
-            ECNamedCurveParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp128r1");
-            ECPoint point = ecSpec.getCurve().decodePoint(compressedPublicKey);
-            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(point, ecSpec);
-            keyFactory = KeyFactory.getInstance("ECDSA");
-            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-            return publicKey;
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+            keyFac = KeyFactory.getInstance("EC");
+        } catch (final NoSuchAlgorithmException e1) {
+            keyFac = KeyFactory.getInstance("ECDSA");
+        }
+
+        if (keyFac != null) {
+            try {
+                final PublicKey publicKey = keyFac.generatePublic(ecPubKey);
+                final Signature dsa = Signature.getInstance("NONEwithECDSA");
+                dsa.initVerify(publicKey);
+                dsa.update(data);
+                return dsa.verify(derEncodeSignature(signature));
+            } catch (final SignatureException | InvalidKeySpecException | InvalidKeyException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+    public static ECPublicKeySpec getEcPubKey(final String key, final
+    ECParameterSpec
+            curve) {
+        if (key == null || key.length() != 2 * 33 || !key.startsWith("04")) {
             return null;
         }
 
+        final String keyX = key.substring(2 * 1, 2 * 17);
+        final String keyY = key.substring(2 * 17, 2 * 33);
+
+        final BigInteger affineX = new BigInteger(keyX, 16);
+        final BigInteger affineY = new BigInteger(keyY, 16);
+        final ECPoint w = new ECPoint(affineX, affineY);
+
+        return new ECPublicKeySpec(w, curve);
     }
 
-    public static PublicKey pointToPublicKeyBC(String x, String y) throws InvalidKeySpecException, NoSuchProviderException, NoSuchAlgorithmException {
-        X9ECParameters ecp = SECNamedCurves.getByName("secp128r1");
+    public static ECParameterSpec getEcSecp128r1() {
+        // EC definition of "secp128r1":
+        final BigInteger p = new
+                BigInteger("fffffffdffffffffffffffffffffffff", 16);
+        final ECFieldFp field = new ECFieldFp(p);
 
-        ECParameterSpec ecparam = new ECParameterSpec(ecp.getCurve(), ecp.getG(), ecp.getN(), ecp.getH());
-        ECPoint ecPoint = ecp.getCurve().createPoint(new BigInteger(x, 16), new BigInteger(y, 16));
-        ECPublicKeySpec spec = new ECPublicKeySpec(ecPoint, ecparam);
+        final BigInteger a = new
+                BigInteger("fffffffdfffffffffffffffffffffffc", 16);
+        final BigInteger b = new
+                BigInteger("e87579c11079f43dd824993c2cee5ed3", 16);
+        final EllipticCurve curve = new EllipticCurve(field, a, b);
 
-        KeyFactory keyFactory = KeyFactory.getInstance("ECDH", "BC");
-        PublicKey publicKey = keyFactory.generatePublic(spec);
-        return publicKey;
+        final BigInteger genX = new
+                BigInteger("161ff7528b899b2d0c28607ca52c5b86", 16);
+        final BigInteger genY = new
+                BigInteger("cf5ac8395bafeb13c02da292dded7a83", 16);
+        final ECPoint generator = new ECPoint(genX, genY);
+
+        final BigInteger order = new
+                BigInteger("fffffffe0000000075a30d1b9038a115", 16);
+        final int cofactor = 1;
+
+        return new ECParameterSpec(curve, generator, order, cofactor);
     }
 
-    private static Boolean ecVerifySignatureP1363(PublicKey publicKey, byte[] messageByte, byte[] signatureByte)
-    {
-        Signature publicSignature = null;
-        try {
-            //publicSignature = Signature.getInstance("SHA256withECDSAinP1363format");
-            publicSignature = Signature.getInstance("SHA1withECDSAinP1363format", "BC");
-            publicSignature.initVerify(publicKey);
-            publicSignature.update(messageByte);
-            return publicSignature.verify(signatureByte);
-        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | NoSuchProviderException e) {
-            e.printStackTrace();
-            return false;
+    public static byte[] derEncodeSignature(final byte[] signature) {
+        // split into r and s
+        final byte[] r = Arrays.copyOfRange(signature, 0, 16);
+        final byte[] s = Arrays.copyOfRange(signature, 16, 32);
+
+        int rLen = r.length;
+        int sLen = s.length;
+        if ((r[0] & 0x80) != 0) {
+            rLen++;
         }
-
-    }
-
-    private static Boolean ecVerifySignatureP1363B(PublicKey publicKey, byte[] messageByte, byte[] signatureByte)
-    {
-        Signature publicSignature = null;
-        try {
-            //publicSignature = Signature.getInstance("SHA256withECDSA");
-            publicSignature = Signature.getInstance("SHA1withECDSA", "BC");
-            publicSignature.initVerify(publicKey);
-            publicSignature.update(messageByte);
-            return publicSignature.verify((signatureByte));
-            //return publicSignature.verify(P1363ToDer(signatureByte));
-        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | NoSuchProviderException e) {
-            e.printStackTrace();
-            return false;
+        if ((s[0] & 0x80) != 0) {
+            sLen++;
         }
-    }
+        final byte[] encodedSig = new byte[rLen + sLen + 6]; // 6 T and L bytes
+        encodedSig[0] = 0x30; // SEQUENCE
+        encodedSig[1] = (byte) (4 + rLen + sLen);
+        encodedSig[2] = 0x02; // INTEGER
+        encodedSig[3] = (byte) rLen;
+        encodedSig[4 + rLen] = 0x02; // INTEGER
+        encodedSig[4 + rLen + 1] = (byte) sLen;
 
-    // conversions between Der to P1363 and vice versa
-    // https://stackoverflow.com/a/61873962/8166854 answered May 18 '20 at 16:07 by dave_thompson_085
-    // code is for SECP256R1
-    // secp384r1 (aka P-384) has 384-bit order so use 384/8 which is 48 for n
-    static byte[] P1363ToDer (byte[] p1363)  {
-        //int n = 32; // for example assume 256-bit-order curve like P-256
-        int n = 24;
-        BigInteger r = new BigInteger (+1, Arrays.copyOfRange(p1363,0,n));
-        BigInteger s = new BigInteger (+1, Arrays.copyOfRange(p1363,n,n*2));
-        ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new ASN1Integer(r)); v.add(new ASN1Integer(s));
-        try {
-            return new DERSequence(v).getEncoded();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new byte[0];
-        }
-    }
+        // copy in r and s
+        encodedSig[4] = 0;
+        encodedSig[4 + rLen + 2] = 0;
+        System.arraycopy(r, 0, encodedSig, 4 + rLen - r.length, r.length);
+        System.arraycopy(s, 0, encodedSig, 4 + rLen + 2 + sLen - s.length,
+                s.length);
 
-    static byte[] DerToP1363 (byte[] der) {
-        int n = 32; // for example assume 256-bit-order curve like P-256
-        BigInteger r, s;
-        byte[] out;
-        ASN1Sequence seq = ASN1Sequence.getInstance(der);
-        r = ((ASN1Integer)seq.getObjectAt(0)).getValue();
-        s = ((ASN1Integer)seq.getObjectAt(1)).getValue();
-        out = new byte[2*n];
-        toFixed(r, out, 0, n);
-        toFixed(s, out, n, n);
-        return out;
+        return encodedSig;
     }
-    static void toFixed (BigInteger x, byte[] a, int off, int len) {
-        byte[] t = x.toByteArray();
-        if( t.length == len+1 && t[0] == 0 ) System.arraycopy (t,1, a,off, len);
-        else if( t.length <= len ) System.arraycopy (t,0, a,off+len-t.length, t.length);
-        else {
-            System.exit(1);
-        }
-    }
-    // end conversion der to p1363 and vice versa
+    // END code from NXP's AN11350 document (NTAG21x Originality Signature Validation)
 
     private void writeToUiAppend(TextView textView, String message) {
         runOnUiThread(() -> {
