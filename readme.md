@@ -13,7 +13,7 @@ These are the specifications of the signature:
 - Signature Scheme: ECDSA with NONE hashing
 - Signature encoding: IEE P1363 (32 bytes R value, 32 bytes S value)
 
-As guys from NXP added some code for using the curve and converting the signature from P1363 to 
+As the guys from NXP added some code for using the curve and converting the signature from P1363 to 
 DER encoding the complete verification is done in pure Java without any additional 3rd party 
 tools.
 
@@ -24,3 +24,7 @@ Don't forget to add these 2 permissions to your AndroidManifest.xml:
 ```
 
 The app is runnable on Android SDKs from 21+, developed on Android 12 (SDK 32).   
+
+The app icon is generated with help from **Launcher icon generator** 
+(https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html), 
+(options trim image and resize to 110%, color #2196F3)
