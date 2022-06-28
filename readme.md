@@ -27,4 +27,4 @@ The app is runnable on Android SDKs from 21+, developed on Android 12 (SDK 32).
 
 The app icon is generated with help from **Launcher icon generator** 
 (https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html), 
-(options trim image and resize to 110%, color #2196F3)
+(options trim image and resize to 110%, color #2196F3).
