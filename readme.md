@@ -8,10 +8,12 @@ AN11350, provided by NXP.
 The Public Key is taken from the same document.
 
 These are the specifications of the signature:
+```plaintext
 - Key type: Elliptic Curve
 - Curve: SECP128R1
 - Signature Scheme: ECDSA with NONE hashing
 - Signature encoding: IEE P1363 (32 bytes R value, 32 bytes S value)
+```
 
 As the guys from NXP added some code for using the curve and converting the signature from P1363 to 
 DER encoding the complete verification is done in pure Java without any additional 3rd party 
