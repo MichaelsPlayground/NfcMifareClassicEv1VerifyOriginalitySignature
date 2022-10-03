@@ -1,4 +1,4 @@
-package de.androidcrypto.nfcnfcaverifyntag21xsignature;
+package de.androidcrypto.nfcnfcaverifyultralightev1signature;
 
 import android.nfc.tech.NfcA;
 

@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="This app reads the tag id and the signature and verifys it with the Public Key for NXP NTAG21x."
+            android:text="This app reads the tag id and the signature and verifys it with the Public Key for NXP Ultralight Ev1."
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -95,7 +95,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:hint="EC Public key from NXP for NTAG21x"
+            android:hint="EC Public key from NXP for Ultralight EV1"
             app:boxCornerRadiusBottomEnd="5dp"
             app:boxCornerRadiusBottomStart="5dp"
             app:boxCornerRadiusTopEnd="5dp"

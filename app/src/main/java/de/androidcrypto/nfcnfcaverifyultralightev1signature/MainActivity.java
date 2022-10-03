@@ -1,4 +1,4 @@
-package de.androidcrypto.nfcnfcaverifyntag21xsignature;
+package de.androidcrypto.nfcnfcaverifyultralightev1signature;
 
 import android.content.Context;
 import android.nfc.NfcAdapter;
@@ -53,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        publicKeyNxp.setText("04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61");
+        //publicKeyNxp.setText("04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61"); // NTAG21x
+        publicKeyNxp.setText("0490933bdcd6e99b4e255e3da55389a827564e11718e017292faf23226a96614b8"); // Ultralight EV1
     }
 
     // This method is run in another thread when a card is discovered
@@ -91,7 +92,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
                 nfcA.connect();
 
-                // check that the tag is a NTAG213/215/216 manufactured by NXP - stop if not
+                // check that the tag is an Ultralight EV1 manufactured by NXP - stop if not
+                System.out.println("*** tagId: " + Utils.bytesToHex(tag.getId()));
+                /*
                 String ntagVersion = NfcIdentifyNtag.checkNtagType(nfcA, tag.getId());
                 if (ntagVersion.equals("0")) {
                     runOnUiThread(() -> {
@@ -102,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     });
                     return;
                 }
+
+                 */
 
                 // tag ID
                 tagIdByte = tag.getId();

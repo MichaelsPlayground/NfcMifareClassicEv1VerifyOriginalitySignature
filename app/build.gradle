@@ -6,7 +6,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "de.androidcrypto.nfcnfcaverifyntag21xsignature"
+        applicationId "de.androidcrypto.nfcnfcaverifyultralightev1signature"
         minSdk 21
         targetSdk 32
         versionCode 1
