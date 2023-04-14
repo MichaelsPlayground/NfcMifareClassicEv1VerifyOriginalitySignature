@@ -1,4 +1,4 @@
-package de.androidcrypto.nfcnfcaverifyultralightev1signature;
+package de.androidcrypto.nfcnfcaverifymifareclassicev1signature;
 
 import android.content.Context;
 import android.nfc.NfcAdapter;
@@ -54,7 +54,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         //publicKeyNxp.setText("04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61"); // NTAG21x
-        publicKeyNxp.setText("0490933bdcd6e99b4e255e3da55389a827564e11718e017292faf23226a96614b8"); // Ultralight EV1
+        //publicKeyNxp.setText("0490933bdcd6e99b4e255e3da55389a827564e11718e017292faf23226a96614b8"); // Ultralight EV1
+
+        // taken from https://blog.linuxgemini.space/derive-pk-of-nxp-mifare-classic-ev1-ecdsa-signature
+        publicKeyNxp.setText("044F6D3F294DEA5737F0F46FFEE88A356EED95695DD7E0C27A591E6F6F65962BAF"); // Mifare Classic EV1
+
     }
 
     // This method is run in another thread when a card is discovered

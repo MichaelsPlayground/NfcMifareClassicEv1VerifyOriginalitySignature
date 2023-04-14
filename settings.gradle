@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "NfcNfcaVerifyUltralightEv1Signature"
+rootProject.name = "NfcNfcaVerifyMifareClassicEv1Signature"
 include ':app'

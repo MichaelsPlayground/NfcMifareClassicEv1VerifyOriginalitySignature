@@ -1,6 +1,8 @@
 # NFC NFCA Verify signature of NXP's NTAG21x
 
-This app is verifying the ("originality") signature of a NTAG21x. 
+This app is verifying the ("originality") signature of a Mifare Classic EV1. 
+
+**Note: this is not working at the moment !**
 
 Kindly note that the code for verification of the signature is taken from the application note  
 AN11350, provided by NXP.
