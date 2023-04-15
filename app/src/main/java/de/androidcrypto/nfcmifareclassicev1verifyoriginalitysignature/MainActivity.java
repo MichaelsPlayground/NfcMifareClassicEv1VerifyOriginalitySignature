@@ -37,9 +37,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     byte[] tagIdByte, tagSignatureByte, publicKeyByte;
     boolean signatureVerfied = false;
 
-    final static String publicKeyNxpX = "494E1A386D3D3CFE3DC10E5DE68A499B";
-    final static String publicKeyNxpY = "1C202DB5B132393E89ED19FE5BE8BC61";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,9 +48,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         readResult = findViewById(R.id.etVerifyResult);
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
-        //publicKeyNxp.setText("04494E1A386D3D3CFE3DC10E5DE68A499B1C202DB5B132393E89ED19FE5BE8BC61"); // NTAG21x
-        //publicKeyNxp.setText("0490933bdcd6e99b4e255e3da55389a827564e11718e017292faf23226a96614b8"); // Ultralight EV1
 
         // taken from https://blog.linuxgemini.space/derive-pk-of-nxp-mifare-classic-ev1-ecdsa-signature
         publicKeyNxp.setText("044F6D3F294DEA5737F0F46FFEE88A356EED95695DD7E0C27A591E6F6F65962BAF"); // Mifare Classic EV1
@@ -157,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             } else {
                 readResult.setBackgroundColor(getResources().getColor(R.color.light_background_red));
             }
-
         });
     }
 
