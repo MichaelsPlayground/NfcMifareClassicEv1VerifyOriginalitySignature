@@ -4,7 +4,6 @@ import android.content.Context;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
-import android.nfc.tech.MifareClassic;
 import android.nfc.tech.NfcA;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,7 +31,7 @@ import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements NfcAdapter.ReaderCallback {
+public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.ReaderCallback {
 
     EditText tagId, tagSignature, publicKeyNxp, readResult;
     private NfcAdapter mNfcAdapter;
@@ -142,19 +141,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     }
                     */
 
-                    // Do a Read operation at page 69 and 70
-                    System.out.println("### READ PAGES 69 and 70 ###");
-                    byte[] result = nfcA.transceive(new byte[] {
-                            (byte)0x3A,  // FAST_READ
-                            (byte)(69 & 0x0ff),
-                            (byte)(70 & 0x0ff),
-                    });
-                    if (result != null) {
-                        System.out.println("*** result length: " + result.length + " data: " + Utils.bytesToHex(result));
-                    }
-
-
-
                     String commandString = "3C00"; // read signature
                     byte[] commandByte = Utils.hexStringToByteArray(commandString);
                     try {
@@ -177,11 +163,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                             writeToUiAppend(readResult, "SUCCESS: response: " + Utils.bytesToHex(response) + " Length: " + response.length);
                             //System.out.println("write to page " + page + ": " + bytesToHex(response));
                             tagSignatureByte = response.clone();
-
-                            // I/System.out: r length:16 data: ffb5ead81e248da78f079311f500247e
-                            // I/System.out: s length:16 data: f2bf977a48964bbd32780da4c8c386f9
-                            tagSignatureByte = Utils.hexStringToByteArray("ffb5ead81e248da78f079311f500247ef2bf977a48964bbd32780da4c8c386f9");
-
                             runOnUiThread(() -> {
                                 tagSignature.setText(Utils.bytesToHex(tagSignatureByte));
                             });
