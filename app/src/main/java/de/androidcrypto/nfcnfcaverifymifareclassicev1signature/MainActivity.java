@@ -121,6 +121,26 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                 byte[] response = new byte[0];
 
                 try {
+                    /* chat gpt solution
+                    // Authenticate with the tag
+                    byte[] authKey = {(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff};
+                    byte[] cmdAuthenticate = {(byte)0x1a, (byte)0x00};
+                    byte[] cmdAuthenticateWithData = new byte[cmdAuthenticate.length + authKey.length + 1];
+                    System.arraycopy(cmdAuthenticate, 0, cmdAuthenticateWithData, 0, cmdAuthenticate.length);
+                    System.arraycopy(authKey, 0, cmdAuthenticateWithData, cmdAuthenticate.length, authKey.length);
+                    cmdAuthenticateWithData[cmdAuthenticateWithData.length - 1] = 0x00;
+                    response = nfcA.transceive(cmdAuthenticateWithData);
+                    if (response != null) {
+                        System.out.println("*** response to Auth length: " + response.length + " data: " + Utils.bytesToHex(response));
+                    }
+                    // Read the originality signature from block 0
+                    byte[] cmdReadBlock = {(byte)0x30, (byte)0x00, (byte)0x2C, (byte)0x00, (byte)0x10};
+                    response = nfcA.transceive(cmdReadBlock);
+                    if (response != null) {
+                        System.out.println("*** response to Sign length: " + response.length + " data: " + Utils.bytesToHex(response));
+                    }
+                    */
+
                     String commandString = "3C00"; // read signature
                     byte[] commandByte = Utils.hexStringToByteArray(commandString);
                     try {
