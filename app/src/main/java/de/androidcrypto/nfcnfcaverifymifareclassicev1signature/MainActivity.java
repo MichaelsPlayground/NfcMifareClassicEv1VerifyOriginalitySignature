@@ -125,6 +125,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     byte[] commandByte = Utils.hexStringToByteArray(commandString);
                     try {
                         response = nfcA.transceive(commandByte); // response should be 16 bytes = 4 pages
+                        if (response != null) {
+                            System.out.println("*** response to 3C00 length: " + response.length + " data: " + Utils.bytesToHex(response));
+                        }
                         if (response == null) {
                             // either communication to the tag was lost or a NACK was received
                             writeToUiAppend(readResult, "ERROR: null response");
@@ -136,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                             return;
                         } else {
                             // success: response contains (P)ACK or actual data
-                            writeToUiAppend(readResult, "SUCCESS: response: " + Utils.bytesToHex(response));
+                            writeToUiAppend(readResult, "SUCCESS: response: " + Utils.bytesToHex(response) + " Length: " + response.length);
                             //System.out.println("write to page " + page + ": " + bytesToHex(response));
                             tagSignatureByte = response.clone();
                             runOnUiThread(() -> {
