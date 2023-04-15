@@ -1,10 +1,9 @@
-package de.androidcrypto.nfcnfcaverifymifareclassicev1signature;
+package de.androidcrypto.nfcmifareclassicev1verifyoriginalitysignature;
 
 import android.content.Context;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.nfc.TagLostException;
-import android.nfc.tech.NfcA;
+import android.nfc.tech.MifareClassic;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -31,7 +30,7 @@ import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
-public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.ReaderCallback {
+public class MainActivity extends AppCompatActivity implements NfcAdapter.ReaderCallback {
 
     EditText tagId, tagSignature, publicKeyNxp, readResult;
     private NfcAdapter mNfcAdapter;
@@ -71,124 +70,73 @@ public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.Rea
 
         System.out.println("NFC tag discovered");
 
-        NfcA nfcA = null;
+        MifareClassic mfc = MifareClassic.get(tag);
+        if (mfc == null) {
+            runOnUiThread(() -> {
+                Toast.makeText(getApplicationContext(),
+                        "The tag is not readable with Mifare Classic classes, sorry",
+                        Toast.LENGTH_SHORT).show();
+            });
+            return;
+        }
 
         try {
-            nfcA = NfcA.get(tag);
-            if (nfcA != null) {
+            runOnUiThread(() -> {
+                Toast.makeText(getApplicationContext(),
+                        "NFC tag is Mifare Classic compatible",
+                        Toast.LENGTH_SHORT).show();
+                readResult.setText("");
+                readResult.setBackgroundColor(getResources().getColor(R.color.white));
+            });
+
+            // Make a Sound
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(150, 10));
+            } else {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(200);
+            }
+
+            mfc.connect();
+
+            // tag ID
+            tagIdByte = tag.getId();
+            runOnUiThread(() -> {
+                tagId.setText(Utils.bytesToHex(tagIdByte));
+            });
+
+            // see https://blog.linuxgemini.space/derive-pk-of-nxp-mifare-classic-ev1-ecdsa-signature
+            // r can be read on PM3 with the command hf mf rdbl 69 B 4b791bea7bcc
+            // s can be read on PM3 with the command hf mf rdbl 70 B 4b791bea7bcc
+            byte[] r = readBlock(mfc, 69, Utils.hexStringToByteArray("4b791bea7bcc"));
+            byte[] s = readBlock(mfc, 70, Utils.hexStringToByteArray("4b791bea7bcc"));
+            if ((r == null) | (s == null)) {
                 runOnUiThread(() -> {
                     Toast.makeText(getApplicationContext(),
-                            "NFC tag is Nfca compatible",
+                            "Error when reading the signature, aborted",
                             Toast.LENGTH_SHORT).show();
-                });
-
-                // Make a Sound
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(150, 10));
-                } else {
-                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                    v.vibrate(200);
-                }
-
-                runOnUiThread(() -> {
-                    readResult.setText("");
-                });
-
-                nfcA.connect();
-
-                // check that the tag is an Ultralight EV1 manufactured by NXP - stop if not
-                System.out.println("*** tagId: " + Utils.bytesToHex(tag.getId()));
-                /*
-                String ntagVersion = NfcIdentifyNtag.checkNtagType(nfcA, tag.getId());
-                if (ntagVersion.equals("0")) {
-                    runOnUiThread(() -> {
-                        readResult.setText("NFC tag is NOT of type NXP NTAG213/215/216");
-                        Toast.makeText(getApplicationContext(),
-                                "NFC tag is NOT of type NXP NTAG213/215/216",
-                                Toast.LENGTH_SHORT).show();
-                    });
+                    readResult.setText("Error when reading the signature, aborted");
                     return;
-                }
-
-                 */
-
-                // tag ID
-                tagIdByte = tag.getId();
-                runOnUiThread(() -> {
-                    tagId.setText(Utils.bytesToHex(tagIdByte));
                 });
-
-                byte[] response = new byte[0];
-
-                try {
-                    /* chat gpt solution
-                    // Authenticate with the tag
-                    byte[] authKey = {(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff};
-                    byte[] cmdAuthenticate = {(byte)0x1a, (byte)0x00};
-                    byte[] cmdAuthenticateWithData = new byte[cmdAuthenticate.length + authKey.length + 1];
-                    System.arraycopy(cmdAuthenticate, 0, cmdAuthenticateWithData, 0, cmdAuthenticate.length);
-                    System.arraycopy(authKey, 0, cmdAuthenticateWithData, cmdAuthenticate.length, authKey.length);
-                    cmdAuthenticateWithData[cmdAuthenticateWithData.length - 1] = 0x00;
-                    response = nfcA.transceive(cmdAuthenticateWithData);
-                    if (response != null) {
-                        System.out.println("*** response to Auth length: " + response.length + " data: " + Utils.bytesToHex(response));
-                    }
-                    // Read the originality signature from block 0
-                    byte[] cmdReadBlock = {(byte)0x30, (byte)0x00, (byte)0x2C, (byte)0x00, (byte)0x10};
-                    response = nfcA.transceive(cmdReadBlock);
-                    if (response != null) {
-                        System.out.println("*** response to Sign length: " + response.length + " data: " + Utils.bytesToHex(response));
-                    }
-                    */
-
-                    String commandString = "3C00"; // read signature
-                    byte[] commandByte = Utils.hexStringToByteArray(commandString);
-                    try {
-                        response = nfcA.transceive(commandByte); // response should be 16 bytes = 4 pages
-                        if (response != null) {
-                            System.out.println("*** response to 3C00 length: " + response.length + " data: " + Utils.bytesToHex(response));
-                            // *** response to 3C00 length: 16 data: b2006a82355b806c480000e1106d0000
-                        }
-                        if (response == null) {
-                            // either communication to the tag was lost or a NACK was received
-                            writeToUiAppend(readResult, "ERROR: null response");
-                            return;
-                        } else if ((response.length == 1) && ((response[0] & 0x00A) != 0x00A)) {
-                            // NACK response according to Digital Protocol/T2TOP
-                            // Log and return
-                            writeToUiAppend(readResult, "ERROR: NACK response: " + Utils.bytesToHex(response));
-                            return;
-                        } else {
-                            // success: response contains (P)ACK or actual data
-                            writeToUiAppend(readResult, "SUCCESS: response: " + Utils.bytesToHex(response) + " Length: " + response.length);
-                            //System.out.println("write to page " + page + ": " + bytesToHex(response));
-                            tagSignatureByte = response.clone();
-                            runOnUiThread(() -> {
-                                tagSignature.setText(Utils.bytesToHex(tagSignatureByte));
-                            });
-                        }
-                    } catch (TagLostException e) {
-                        // Log and return
-                        System.out.println("*** TagLostException");
-                        runOnUiThread(() -> {
-                            readResult.setText("ERROR: Tag lost exception or command not recognized");
-                        });
-                        return;
-                    } catch (IOException e) {
-                        writeToUiAppend(readResult, "ERROR: IOException " + e.toString());
-                        System.out.println("*** IOException");
-                        e.printStackTrace();
-                        return;
-                    }
-                } finally {
-                    try {
-                        nfcA.close();
-                    } catch (IOException e) {
-                        writeToUiAppend(readResult, "ERROR: IOException " + e.toString());
-                        e.printStackTrace();
-                    }
-                }
             }
+
+            System.out.println("*** ");
+            if ((r != null) && (s != null)) {
+                System.out.println("r length:" + r.length + " data: " + Utils.bytesToHex(r));
+                System.out.println("s length:" + s.length + " data: " + Utils.bytesToHex(s));
+            } else {
+                System.out.println("r and/or s are null");
+                return;
+            }
+            tagSignatureByte = new byte[32]; // length of the signature
+            System.arraycopy(r, 0, tagSignatureByte, 0, r.length);
+            System.arraycopy(s, 0, tagSignatureByte, 16, s.length);
+            System.out.println("sig length:" + tagSignatureByte.length + " data: " + Utils.bytesToHex(tagSignatureByte));
+
+            byte[] finalTagSignatureByte = tagSignatureByte;
+            runOnUiThread(() -> {
+                tagSignature.setText(Utils.bytesToHex(finalTagSignatureByte));
+            });
         } catch (IOException e) {
             writeToUiAppend(readResult, "ERROR: IOException " + e.toString());
             e.printStackTrace();
@@ -203,6 +151,37 @@ public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.Rea
             e.printStackTrace();
         }
         writeToUiAppend(readResult, "SignatureVerified: " + signatureVerfied);
+        runOnUiThread(() -> {
+            if (signatureVerfied) {
+                readResult.setBackgroundColor(getResources().getColor(R.color.light_background_green));
+            } else {
+                readResult.setBackgroundColor(getResources().getColor(R.color.light_background_red));
+            }
+
+        });
+    }
+
+    /**
+     * read a single block from mifare classic tag by block
+     *
+     * @param mif
+     * @param blockCnt
+     * @param key      usually keyB for blocks outside the scope of user accessible memory
+     * @return the content of block (16 bytes) or null if any error occurs
+     */
+    private byte[] readBlock(MifareClassic mif, int blockCnt, byte[] key) {
+        byte[] block;
+        int secCnt = mif.blockToSector(blockCnt);
+        System.out.println("readBlock for block " + blockCnt + " is in sector " + secCnt);
+        try {
+            mif.authenticateSectorWithKeyB(secCnt, key);
+            block = mif.readBlock(blockCnt);
+        } catch (IOException e) {
+            //throw new RuntimeException(e);
+            System.out.println("RuntimeException: " + e.getMessage());
+            return null;
+        }
+        return block;
     }
 
     // START code from NXP's AN11350 document (NTAG21x Originality Signature Validation)
@@ -217,8 +196,7 @@ public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.Rea
     public static boolean checkEcdsaSignature(final ECPublicKeySpec
                                                       ecPubKey, final byte[]
                                                       signature, final byte[] data)
-            throws NoSuchAlgorithmException
-    {
+            throws NoSuchAlgorithmException {
         KeyFactory keyFac = null;
         try {
             keyFac = KeyFactory.getInstance("EC");
@@ -240,6 +218,7 @@ public class MainActivityOrg extends AppCompatActivity implements NfcAdapter.Rea
 
         return false;
     }
+
     public static ECPublicKeySpec getEcPubKey(final String key, final
     ECParameterSpec
             curve) {

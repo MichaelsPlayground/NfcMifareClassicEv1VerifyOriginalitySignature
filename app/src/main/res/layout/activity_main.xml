@@ -16,9 +16,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="This app reads the tag id and the signature and verifys it with the Public Key for NXP Mifare Classic Ev1."
+            android:text="Mifare Classic EV1: Read the tag id and verify the originality signature against the Public Key"
             android:textAlignment="center"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="When a tag is discovered the data from the tag will be read."
+            android:text="Please tap the tag to the device's NFC reader"
             android:textAlignment="center"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -95,7 +95,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:hint="EC Public key from NXP for Mifare Classic EV1"
+            android:hint="EC Public key for NXP Mifare Classic EV1"
             app:boxCornerRadiusBottomEnd="5dp"
             app:boxCornerRadiusBottomStart="5dp"
             app:boxCornerRadiusTopEnd="5dp"

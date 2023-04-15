@@ -1,4 +1,4 @@
-package de.androidcrypto.nfcnfcaverifymifareclassicev1signature;
+package de.androidcrypto.nfcmifareclassicev1verifyoriginalitysignature;
 
 import android.content.Context;
 

@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#2196F3</color>
     <color name="colorStatusBar">#1E88E5</color>
+    <color name="light_background_green">#C0FFC0</color>
+    <color name="light_background_red">#FFB5B5</color>
 </resources>

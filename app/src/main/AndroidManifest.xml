@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="de.androidcrypto.nfcnfcaverifymifareclassicev1signature">
+    package="de.androidcrypto.nfcmifareclassicev1verifyoriginalitysignature">
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -17,7 +17,7 @@
         android:theme="@style/Theme.NfcNfcaVerifyNtag21xSignature"
         tools:targetApi="31">
         <activity
-            android:name="de.androidcrypto.nfcnfcaverifymifareclassicev1signature.MainActivity"
+            android:name="de.androidcrypto.nfcmifareclassicev1verifyoriginalitysignature.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,13 +1,13 @@
-# NFC NFCA Verify signature of NXP's NTAG21x
+# NFC Verify the originality signature of NXP's Mifare Classic EV1
 
-This app is verifying the ("originality") signature of a Mifare Classic EV1. 
-
-**Note: this is not working at the moment !**
+This app is verifying the ("originality") signature of a Mifare Classic EV1 tag. 
 
 Kindly note that the code for verification of the signature is taken from the application note  
 AN11350, provided by NXP.
 
-The Public Key is taken from the same document.
+The **Public Key** and the Key B for reading the signature is taken from this website:
+
+https://blog.linuxgemini.space/derive-pk-of-nxp-mifare-classic-ev1-ecdsa-signature
 
 These are the specifications of the signature:
 ```plaintext
